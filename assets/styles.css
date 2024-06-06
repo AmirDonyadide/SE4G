@@ -1,0 +1,249 @@
+/* General body styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Header styles */
+.header {
+    background-color: #004d99;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 5px solid #003366;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2.5em;
+    font-weight: 300;
+}
+
+.header p {
+    margin: 5px 0 0;
+    font-size: 1.2em;
+    font-weight: 200;
+}
+
+/* Selection section styles */
+.selection-section {
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    width: 15%;
+    display: inline-block;
+    vertical-align: top;
+    height: 500px;
+}
+
+.selection-section h3 {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.selection-section label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #34495e;
+}
+
+.selection-section .dash-checklist,
+.selection-section .dash-dropdown {
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.selection-section .dash-dropdown {
+    width: 200px;
+}
+
+.selection-section .dash-input,
+.selection-section .dash-password {
+    padding: 5px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    width: 180px;
+}
+
+/* Map section styles */
+.map-section {
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 75%;
+    display: inline-block;
+    vertical-align: top;
+    height: 500px;  
+}
+#folium-map {
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* Table and plot section styles */
+.table-section, .plot-section {
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    height: 410px;
+}
+
+.table-section {
+    width: 40%;
+    display: inline-block;
+    vertical-align: top;
+    overflow-y: auto;
+}
+
+.plot-section {
+    width: 50%;
+    display: inline-block;
+    vertical-align: top;
+    overflow-y: auto;
+}
+
+.table-section h3, .plot-section h3 {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+/* Define styles for the table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Define styles for table header */
+.table th {
+    padding: 8px;
+    border: 1px solid #ddd;
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+/* Define styles for table data */
+.table td {
+    padding: 8px;
+    border: 1px solid #ddd; 
+    text-align: left;
+}
+
+/* Define styles for table alternate rows */
+.table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Define styles for table hover effect */
+.table tr:hover {
+    background-color: #ddd;
+}
+
+/* Download button styles */
+.download-button {
+    background-color: #004d99;
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+}
+
+.download-button:hover {
+    background-color: #003366;
+}
+
+/* Footer styles */
+.footer {
+    background-color: #004d99;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    border-top: 3px solid #003366;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Registration form styles */
+.register-section {
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 25%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.register-section h3 {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.register-section label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #34495e;
+}
+
+.register-section .dash-input,
+.register-section .dash-password {
+    padding: 5px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    width: 40%;
+}
+
+.register-section .dash-dropdown {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.register-section .dash-checklist {
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.register-section .dash-button {
+    background-color: #004d99;
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+}
+
+.register-section .dash-button:hover {
+    background-color: #003366;
+}
+
+
+
