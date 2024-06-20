@@ -45,7 +45,7 @@ app.layout = html.Div([
     html.Div([
         # Left Section - Selection Tools
         html.Div([
-            html.Label("Userid:"),
+            html.Label("Username:"),
             dcc.Input(
                 id='username-input',
                 type='text'
@@ -108,7 +108,7 @@ app.layout = html.Div([
     # Registration form section
     html.Div([
         html.H3("Register New User"),
-        html.Label("New Userid:"),
+        html.Label("Username:"),
         dcc.Input(
             id='new-username-input',
             type='text',
@@ -167,8 +167,8 @@ app.layout = html.Div([
 )
 def update_plot_section(selected_city, selected_parameter_type, selected_plot_type, user, password):
     if user and password:
-        if user in users['userid'].values:
-            if password == users[users['userid'] == user]['password'].values[0]:
+        if user in users['username'].values:
+            if password == users[users['username'] == user]['password'].values[0]:
                 if selected_city and selected_parameter_type and selected_plot_type:
                     # Get the data for the selected city
                     city_data = cities[cities['name'] == selected_city]
@@ -212,8 +212,8 @@ def update_plot_section(selected_city, selected_parameter_type, selected_plot_ty
 )
 def update_table1_section(selected_city, user, password):
     if user and password:
-        if user in users['userid'].values:
-            if password == users[users['userid'] == user]['password'].values[0]:
+        if user in users['username'].values:
+            if password == users[users['username'] == user]['password'].values[0]:
                 # Check if the input is available
                 if selected_city:
                     if selected_city in olympic_events['CITY'].values:
@@ -256,8 +256,8 @@ def update_table1_section(selected_city, user, password):
 )
 def update_table2_section(selected_city, selected_parameter_type, user, password):
     if user and password:
-        if user in users['userid'].values:
-            if password == users[users['userid'] == user]['password'].values[0]:
+        if user in users['username'].values:
+            if password == users[users['username'] == user]['password'].values[0]:
                 # Check if the input is available
                 if selected_city and selected_parameter_type:
                     # Get the data for the selected city
@@ -270,7 +270,7 @@ def update_table2_section(selected_city, selected_parameter_type, user, password
                     data = data.T.reset_index()
                     data.columns = ['Indicator', 'Value']
                     df = data.merge(parameter_data, on='Indicator')
-                    df=df.drop(columns=['Parameter Type', 'Risk Type', 'Unit'])
+                    df=df.drop(columns=['Parameter Type', 'Risk Type'])
                     # Create the table based on the df
                     table = html.Table(
                         className='table',  # Apply the 'table' class for styling
@@ -308,7 +308,7 @@ def update_folium_map(selected_city):
         # Get the data for the selected city
         city_data = cities[cities['name'] == selected_city]
         # Create a folium map centered at the selected city
-        folium_map = folium.Map(location=[city_data['lat'].values[0], city_data['lon'].values[0]], zoom_start=13)
+        folium_map = folium.Map(location=[city_data['lat'].values[0], city_data['lon'].values[0]], zoom_start=11)
         # Add a marker for the selected city and selected parameter type
         population = city_data['pop_idr_p1'].values[0] + city_data['pop_idr_p2'].values[0] + city_data['pop_idr_p3'].values[0]
         folium.Marker([city_data['lat'].values[0], city_data['lon'].values[0]], popup=f"{city_data['name'].values[0]}  population: {int(population)}").add_to(folium_map)
@@ -399,9 +399,9 @@ def update_download_link(selected_city, selected_parameter_type):
 def register_new_user(n_clicks, new_username, name, last_name, email, new_password):
     if n_clicks:
         if new_username and name and last_name and email and new_password:
-            if new_username not in users['userid'].values:
+            if new_username not in users['username'].values:
                 # Send the data to the API endpoint
-                response = requests.post("http://localhost:5005/api/user", json={'userid': new_username, 'name': name, 'last_name': last_name, 'email': email, 'password': new_password})
+                response = requests.post("http://localhost:5005/api/user", json={'username': new_username, 'name': name, 'last_name': last_name, 'email': email, 'password': new_password})
                 if response.status_code == 200:
                     return html.P("User registered successfully")
                 else:

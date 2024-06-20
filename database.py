@@ -4,10 +4,7 @@ import pandas as pd
 import os
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer
 from sqlalchemy.exc import SQLAlchemyError
-import psycopg2
-import requests
-import json
-from geoalchemy2 import Geometry, WKTElement
+from geoalchemy2 import Geometry
 from shapely import wkt
 import numpy as np
 from sqlalchemy.dialects.postgresql import VARCHAR
@@ -35,7 +32,7 @@ except Exception as e:
 try:
     olympic_events_df = pd.read_excel('data/olympic_events.xlsx', header=0)
     # Convert 'game_id' column to integer type
-    olympic_events_df['game_id'] = olympic_events_df['game_id'].astype(int)
+    olympic_events_df['fid'] = olympic_events_df['fid'].astype(int)
 except FileNotFoundError as e:
     # Handle file not found error
     print(f"Error loading Excel file: {e}")
@@ -75,8 +72,6 @@ except Exception as e:
 # Assign new columns using the defined functions
 indicators_translation['Risk Type'] = indicators_translation['Translation'].apply(extract_risk_type)
 indicators_translation['Parameter Type'] = indicators_translation['Translation'].apply(extract_parameter_type)
-# Assuming unit of number is not explicitly mentioned in the description, you can set it as None
-indicators_translation['Unit'] = indicators_translation['Translation'].apply(extract_units)
 # Specify indicators
 indicators = indicators_translation['Indicator'].tolist()
 
@@ -114,7 +109,6 @@ for city in target_cities:
 
 # Create a DataFrame
 cities_latlon_df = pd.DataFrame(city_coordinates, columns=['name', 'lat', 'lon'])
-
 
 # Specify primary data columns
 primary_data = ['uid', 'nome']
@@ -253,7 +247,7 @@ except SQLAlchemyError as e:
 
 try:
     # Insert the processed city geographical data into the 'cities' table, replacing existing data if any
-    final_city_gdf.to_postgis('cities', engine, if_exists='replace', index=False, dtype={'geometry': Geometry('POLYGON', srid='4326')})
+    final_city_gdf.to_postgis('CITY', engine, if_exists='replace', index=False, dtype={'geometry': Geometry('POLYGON', srid='4326')})
     print("Final City Data inserted into the database successfully.")
 except SQLAlchemyError as e:
     # Notify if an error occurs during city data insertion
@@ -264,7 +258,7 @@ except SQLAlchemyError as e:
 
 try:
     # Insert the processed Olympic events data into the 'olympic_events_df' table, replacing existing data if any
-    olympic_events_df.to_sql('olympic_events', con, if_exists='replace', index=False)
+    olympic_events_df.to_sql('OLYMPIC_EVENTS', con, if_exists='replace', index=False)
     print("Olympic Events Data inserted into the database successfully.")
 except SQLAlchemyError as e:
     # Notify if an error occurs during Olympic events data insertion
@@ -273,8 +267,8 @@ except SQLAlchemyError as e:
 
 try:
     # Insert the processed Olympic events data into the 'olympic_events_df' table, replacing existing data if any
-    users_df.to_sql('users', con, if_exists='replace', index=False)
-    print("users Data inserted into the database successfully.")
+    users_df.to_sql('USER', con, if_exists='replace', index=False)
+    print("USER Data inserted into the database successfully.")
 except SQLAlchemyError as e:
     # Notify if an error occurs during Olympic events data insertion
     print(f"An error occurred while inserting Users data into the database: {e}")
@@ -282,7 +276,7 @@ except SQLAlchemyError as e:
 
 try:
     # Insert the processed Olympic events data into the 'olympic_events_df' table, replacing existing data if any
-    indicators_translation.to_sql('indicators', con, if_exists='replace', index=False)
+    indicators_translation.to_sql('INDICATOR', con, if_exists='replace', index=False)
     print("indicators Data inserted into the database successfully.")
 except SQLAlchemyError as e:
     # Notify if an error occurs during Olympic events data insertion
