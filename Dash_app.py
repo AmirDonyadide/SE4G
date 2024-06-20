@@ -221,24 +221,27 @@ def update_table1_section(selected_city, user, password):
             if password == users[users['userid'] == user]['password'].values[0]:
                 # Check if the input is available
                 if selected_city:
-                    # Get the olympic events data for the selected city
-                    olympic_events_data = olympic_events[olympic_events['CITY'] == selected_city]
-                    # Create the table based on the selected olympic events data(only SPORT and VENUE columns
-                    table = html.Table(
-                        className='table',  # Apply the 'table' class for styling
-                        children=[
-                            html.Thead(
-                                html.Tr([html.Th(col) for col in olympic_events_data[['SPORT', 'VENUE']]])
-                            ),
-                            html.Tbody([
-                                html.Tr([
-                                    html.Td(olympic_events_data.iloc[i]['SPORT']),
-                                    html.Td(olympic_events_data.iloc[i]['VENUE'])
-                                ]) for i in range(len(olympic_events_data))
-                            ])
-                        ]
-                    )
-                    return table
+                    if selected_city in olympic_events['CITY'].values:
+                        # Get the olympic events data for the selected city
+                        olympic_events_data = olympic_events[olympic_events['CITY'] == selected_city]
+                        # Create the table based on the selected olympic events data(only SPORT and VENUE columns
+                        table = html.Table(
+                            className='table',  # Apply the 'table' class for styling
+                            children=[
+                                html.Thead(
+                                    html.Tr([html.Th(col) for col in olympic_events_data[['SPORT', 'VENUE']]])
+                                ),
+                                html.Tbody([
+                                    html.Tr([
+                                        html.Td(olympic_events_data.iloc[i]['SPORT']),
+                                        html.Td(olympic_events_data.iloc[i]['VENUE'])
+                                    ]) for i in range(len(olympic_events_data))
+                                ])
+                            ]
+                        )
+                        return table
+                    else:
+                        return html.P("No Olympic events found for the selected city.")
                 else:
                     return html.P("Please select a city to view the table.")
             else:

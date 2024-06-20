@@ -76,11 +76,34 @@ indicators_translation['Parameter Type'] = indicators_translation['Translation']
 indicators_translation['Unit'] = indicators_translation['Translation'].apply(extract_units)
 
 
-# Specify target cities
 target_cities = [
     'Milano', "Cortina d'Ampezzo", 'Rho', 'Bormio', 'Livigno',
-    'Predazzo',  'Tesero', 'Verona'
+    'Predazzo',  'Tesero', 'Verona', 'Bolzano', 'Cortina d Ampezzo',
+    'Val di Fiemme', 'Val di Fassa', 'Val di Fiemme', 'Val di Sole',
+    'Val Gardena', 'Val Venosta', 'Val Pusteria', 'Valle Isarco',
+    'Valle Aurina', 'Valle di Casies', 'Valle di Braies', 'Valle di Anterselva',
+    'Roma', 'Napoli', 'Torino', 'Palermo',
+    'Genova', 'Bologna', 'Firenze', 'Bari', 'Catania',
+    'Venezia', 'Messina', 'Padova', 'Trieste',
+    'Brescia', 'Taranto', 'Prato', 'Reggio Calabria', 'Modena',
+    'Parma', 'Livorno', 'Foggia', 'Ravenna', 'Perugia',
+    'Cagliari', 'Rimini', 'Salerno', 'Ferrara', 'Sassari',
+    'Latina', 'Giugliano in Campania', 'Monza', 'Siracusa', 'Pescara',
+    'Bergamo', 'Forlì', 'Trento', 'Vicenza', 'Terni',
+    'Novara', 'Piacenza', 'Ancona', 'Andria',
+    'Udine', 'Arezzo', 'Cesena', 'Lecce', 'Pesaro',
+    'Barletta', 'Alessandria', 'La Spezia', 'Pisa', 'Pistoia',
+    'Guidonia Montecelio', 'Lucca', 'Brindisi', 'Torre del Greco', 'Como',
+    'Treviso', 'Busto Arsizio', 'Marsala', 'Grosseto', 'Sesto San Giovanni',
+    'Casoria', 'Pozzuoli', 'Varese', 'Fiumicino', 'Asti',
+    'Caserta', 'Cinisello Balsamo', 'Gela', 'Aprilia', 'Ragusa',
+    'Pavia', 'Cremona', 'Carpi', 'Quartu Sant Elena', 'Lamezia Terme',
+    'Altamura', 'Imola', 'Vittoria', 'Cosenza', 'Potenza',
+    'Molfetta', 'Carrara', 'Crotone', 'Afragola', 'Savona'
 ]
+
+# Remove duplicates
+target_cities = list(set(target_cities))
 
 # Specify indicators
 indicators = indicators_translation['Indicator'].tolist()
