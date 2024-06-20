@@ -11,6 +11,8 @@ from geoalchemy2 import Geometry, WKTElement
 from shapely import wkt
 import numpy as np
 from sqlalchemy.dialects.postgresql import VARCHAR
+from geopy.geocoders import Nominatim
+from time import sleep
 
 # Set the working directory to ensure relative paths work correctly
 os.chdir('/Users/amirdonyadide/Desktop/SE4G')
@@ -69,44 +71,49 @@ except Exception as e:
     print(f"An error occurred while loading Csv file: {e}")
     raise
 
+
 # Assign new columns using the defined functions
 indicators_translation['Risk Type'] = indicators_translation['Translation'].apply(extract_risk_type)
 indicators_translation['Parameter Type'] = indicators_translation['Translation'].apply(extract_parameter_type)
 # Assuming unit of number is not explicitly mentioned in the description, you can set it as None
 indicators_translation['Unit'] = indicators_translation['Translation'].apply(extract_units)
-
-
-target_cities = [
-    'Milano', "Cortina d'Ampezzo", 'Rho', 'Bormio', 'Livigno',
-    'Predazzo',  'Tesero', 'Verona', 'Bolzano', 'Cortina d Ampezzo',
-    'Val di Fiemme', 'Val di Fassa', 'Val di Fiemme', 'Val di Sole',
-    'Val Gardena', 'Val Venosta', 'Val Pusteria', 'Valle Isarco',
-    'Valle Aurina', 'Valle di Casies', 'Valle di Braies', 'Valle di Anterselva',
-    'Roma', 'Napoli', 'Torino', 'Palermo',
-    'Genova', 'Bologna', 'Firenze', 'Bari', 'Catania',
-    'Venezia', 'Messina', 'Padova', 'Trieste',
-    'Brescia', 'Taranto', 'Prato', 'Reggio Calabria', 'Modena',
-    'Parma', 'Livorno', 'Foggia', 'Ravenna', 'Perugia',
-    'Cagliari', 'Rimini', 'Salerno', 'Ferrara', 'Sassari',
-    'Latina', 'Giugliano in Campania', 'Monza', 'Siracusa', 'Pescara',
-    'Bergamo', 'Forlì', 'Trento', 'Vicenza', 'Terni',
-    'Novara', 'Piacenza', 'Ancona', 'Andria',
-    'Udine', 'Arezzo', 'Cesena', 'Lecce', 'Pesaro',
-    'Barletta', 'Alessandria', 'La Spezia', 'Pisa', 'Pistoia',
-    'Guidonia Montecelio', 'Lucca', 'Brindisi', 'Torre del Greco', 'Como',
-    'Treviso', 'Busto Arsizio', 'Marsala', 'Grosseto', 'Sesto San Giovanni',
-    'Casoria', 'Pozzuoli', 'Varese', 'Fiumicino', 'Asti',
-    'Caserta', 'Cinisello Balsamo', 'Gela', 'Aprilia', 'Ragusa',
-    'Pavia', 'Cremona', 'Carpi', 'Quartu Sant Elena', 'Lamezia Terme',
-    'Altamura', 'Imola', 'Vittoria', 'Cosenza', 'Potenza',
-    'Molfetta', 'Carrara', 'Crotone', 'Afragola', 'Savona'
-]
-
-# Remove duplicates
-target_cities = list(set(target_cities))
-
 # Specify indicators
 indicators = indicators_translation['Indicator'].tolist()
+
+
+try:
+    # Read the CSV file as a single string
+    with open('data/target_cities.csv', 'r') as file:
+        cities_str = file.read()
+except FileNotFoundError as e:
+    # Handle file not found error
+    print(f"Error loading CSV file: {e}")
+    raise
+
+# Split the string by commas to get a list of cities
+target_cities = [city.strip() for city in cities_str.split(',')]
+
+# Initialize geolocator
+geolocator = Nominatim(user_agent="city_geocoder")
+
+# List to store city coordinates
+city_coordinates = []
+
+# Loop through each city and get its coordinates
+for city in target_cities:
+    try:
+        location = geolocator.geocode(city + ", Italy")
+        if location:
+            city_coordinates.append((city, location.latitude, location.longitude))
+        else:
+            city_coordinates.append((city, None, None))
+    except Exception as e:
+        city_coordinates.append((city, None, None))
+        print(f"Error geocoding {city}: {e}")
+    sleep(1)  # Sleep to avoid overwhelming the geocoding service
+
+# Create a DataFrame
+cities_latlon_df = pd.DataFrame(city_coordinates, columns=['name', 'lat', 'lon'])
 
 
 # Specify primary data columns
@@ -187,7 +194,7 @@ try:
         filtered_city_data,
         city_data_with_api,
         on=['uid', 'nome'],
-        how='inner'  # You can use 'inner', 'outer', 'left', or 'right' depending on your needs
+        how='inner'  
     )
     # Reorder the DataFrame
     columns_list = final_city_dataset.columns.tolist()
@@ -195,19 +202,10 @@ try:
     final_city_dataset = final_city_dataset[reordered_columns]
     # Convert to GeoDataFrame
     final_city_gdf = gpd.GeoDataFrame(final_city_dataset, geometry='geometry')
-    # Calculate the centroids of the polygons
-    final_city_gdf['centroid'] = final_city_gdf.geometry.centroid
-
-    # Extract the X and Y coordinates of the centroids
-    final_city_gdf['centroid_x'] = final_city_gdf.centroid.x
-    final_city_gdf['centroid_y'] = final_city_gdf.centroid.y
-    # Optionally, drop the centroid column if you don't need it
-    final_city_gdf = final_city_gdf.drop(columns='centroid')
-
     # Rename the column 'nome' to 'name'
     final_city_gdf = final_city_gdf.rename(columns={'nome': 'name'})
     #add lat and lon columns
-    final_city_gdf['lat'] , final_city_gdf['lon'] = utm_to_latlon(final_city_gdf['centroid_x'],final_city_gdf['centroid_y'],32,'N')
+    final_city_gdf = final_city_gdf.merge(cities_latlon_df, on='name', how='inner')
 
     print("Data processing and integration completed successfully.")
 

@@ -11,7 +11,8 @@ import requests
 
 # Download cities data from the API endpoints
 cities = download_data_as_dataframe("http://localhost:5005/api/cities")
-cities = gpd.GeoDataFrame(cities, geometry=gpd.points_from_xy(cities.centroid_x, cities.centroid_y))
+#making geodataframe from lat lon columns
+cities = gpd.GeoDataFrame(cities, geometry=gpd.points_from_xy(cities.lon, cities.lat))
 
 # Download indicators data from the API endpoints
 indicators = download_data_as_dataframe("http://localhost:5005/api/indicators")
@@ -129,12 +130,6 @@ app.layout = html.Div([
         dcc.Input(
             id='email-input',
             type='email',
-            className='dash-input'
-        ),
-        html.Label("User Type:"),
-        dcc.Input(
-            id='user-type-input',
-            type='text',
             className='dash-input'
         ),
         html.Label("Password:"),
@@ -321,7 +316,7 @@ def update_folium_map(selected_city):
 
     else:
         # Create a folium map centered at Italy
-        folium_map = folium.Map(location=[41.8719, 12.5674], zoom_start=5)
+        folium_map = folium.Map(location=[41.8719, 12.5674], zoom_start=4)
         # Add markers for all cities 
         # popups should be the city names and population values
         for i in range(len(cities)):
@@ -399,15 +394,14 @@ def update_download_link(selected_city, selected_parameter_type):
      Input('name-input', 'value'),
      Input('last-name-input', 'value'),
      Input('email-input', 'value'),
-     Input('user-type-input', 'value'),
      Input('new-password-input', 'value')]
 )
-def register_new_user(n_clicks, new_username, name, last_name, email, user_type, new_password):
+def register_new_user(n_clicks, new_username, name, last_name, email, new_password):
     if n_clicks:
-        if new_username and name and last_name and email and user_type and new_password:
+        if new_username and name and last_name and email and new_password:
             if new_username not in users['userid'].values:
                 # Send the data to the API endpoint
-                response = requests.post("http://localhost:5005/api/user", json={'userid': new_username, 'name': name, 'last_name': last_name, 'email': email, 'user_type': user_type, 'password': new_password})
+                response = requests.post("http://localhost:5005/api/user", json={'userid': new_username, 'name': name, 'last_name': last_name, 'email': email, 'password': new_password})
                 if response.status_code == 200:
                     return html.P("User registered successfully")
                 else:

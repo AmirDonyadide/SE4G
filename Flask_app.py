@@ -106,8 +106,8 @@ def get_all_olympic_events():
 def add_user():
     try:
         data = request.json
-        cur.execute("INSERT INTO users (userid,name,last_name,email,user_type,password) VALUES (%s, %s, %s, %s, %s, %s)",
-                    (data['userid'], data['name'], data['last_name'], data['email'], data['user_type'], data['password']))
+        cur.execute("INSERT INTO users (userid,name,last_name,email,password) VALUES (%s, %s, %s, %s, %s)",
+                    (data['userid'], data['name'], data['last_name'], data['email'], data['password']))
         conn.commit()
         return jsonify({'message': 'User added successfully'})
     except psycopg2.Error as e:
