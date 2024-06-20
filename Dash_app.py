@@ -1,12 +1,10 @@
 from dash import Dash, html, dcc, Output, Input
 import geopandas as gpd
 import plotly.express as px
-import plotly.subplots as sp
 import plotly.graph_objects as go
 from functions import download_data_as_dataframe
 import folium
-import folium
-from folium.plugins import MiniMap, Fullscreen, Draw, MeasureControl, HeatMap
+from folium.plugins import MiniMap, Fullscreen, Draw, MeasureControl
 import requests
 
 # Other imports (e.g., pandas) and initial setup code
@@ -82,7 +80,7 @@ app.layout = html.Div([
         ], className='selection-section'),
         # Right Section - Map
         html.Div([
-            html.Iframe(id='folium-map', srcDoc=open('folium_map.html', 'r').read(), width='100%', height='500')
+            html.Iframe(id='folium-map', srcDoc=open('/Users/amirdonyadide/Desktop/SE4G/map.html', 'r').read(), width='100%', height='500')
         ], className='map-section')
     ]),
     # Bottom Section - divided to 2 parts: the right is the plot section and the left is the table section
@@ -346,8 +344,8 @@ def update_folium_map(selected_city):
     folium.LayerControl().add_to(folium_map)
     
     # Save the map to an HTML file
-    folium_map.save("folium_map.html")
-    return open('folium_map.html', 'r').read()
+    folium_map.save("map.html")
+    return open('map.html', 'r').read()
 
 # Callback to update the download link based on the selected city and olympic_events
 @app.callback(

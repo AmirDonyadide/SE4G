@@ -13,7 +13,7 @@ import numpy as np
 from sqlalchemy.dialects.postgresql import VARCHAR
 
 # Set the working directory to ensure relative paths work correctly
-os.chdir('/Users/amirdonyadide/Desktop/Term 2/SOFTWARE ENGINEERING/SE4G-LOCAL')
+os.chdir('/Users/amirdonyadide/Desktop/SE4G')
 
 try:
     # Load shapefiles
