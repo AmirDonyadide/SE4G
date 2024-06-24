@@ -70,8 +70,8 @@ except Exception as e:
 
 
 # Assign new columns using the defined functions
-indicators_translation['Risk Type'] = indicators_translation['Translation'].apply(extract_risk_type)
-indicators_translation['Parameter Type'] = indicators_translation['Translation'].apply(extract_parameter_type)
+indicators_translation['Risk_Type'] = indicators_translation['Translation'].apply(extract_risk_type)
+indicators_translation['Parameter_Type'] = indicators_translation['Translation'].apply(extract_parameter_type)
 # Specify indicators
 indicators = indicators_translation['Indicator'].tolist()
 

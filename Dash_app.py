@@ -173,7 +173,7 @@ def update_plot_section(selected_city, selected_parameter_type, selected_plot_ty
                     # Get the data for the selected city
                     city_data = cities[cities['name'] == selected_city]
                     # Get the data for the selected parameter type
-                    parameter_data = indicators[indicators['Parameter Type'] == selected_parameter_type]
+                    parameter_data = indicators[indicators['Parameter_Type'] == selected_parameter_type]
                     # Merge the city and parameter data
                     data=city_data[parameter_data['Indicator'].tolist()]
                     #merge the data and parameter data
@@ -263,14 +263,14 @@ def update_table2_section(selected_city, selected_parameter_type, user, password
                     # Get the data for the selected city
                     city_data = cities[cities['name'] == selected_city]
                     # Get the data for the selected parameter type
-                    parameter_data = indicators[indicators['Parameter Type'] == selected_parameter_type]
+                    parameter_data = indicators[indicators['Parameter_Type'] == selected_parameter_type]
                     # Merge the city and parameter data
                     data = city_data[parameter_data['Indicator'].tolist()]
                     # Merge the data and parameter data
                     data = data.T.reset_index()
                     data.columns = ['Indicator', 'Value']
                     df = data.merge(parameter_data, on='Indicator')
-                    df=df.drop(columns=['Parameter Type', 'Risk Type'])
+                    df=df.drop(columns=['Parameter_Type', 'Risk_Type'])
                     # Create the table based on the df
                     table = html.Table(
                         className='table',  # Apply the 'table' class for styling
@@ -372,7 +372,7 @@ def update_download_link(selected_city, selected_parameter_type):
         # Get the data for the selected city
         city_data = cities[cities['name'] == selected_city]
         # Get the data for the selected parameter type
-        parameter_data = indicators[indicators['Parameter Type'] == selected_parameter_type]
+        parameter_data = indicators[indicators['Parameter_Type'] == selected_parameter_type]
         # Merge the city and parameter data
         data = city_data[parameter_data['Indicator'].tolist()]
         # Merge the data and parameter data
