@@ -7,8 +7,6 @@ import folium
 from folium.plugins import MiniMap, Fullscreen, Draw, MeasureControl
 import requests
 
-# Other imports (e.g., pandas) and initial setup code
-
 # Download cities data from the API endpoints
 cities = download_data_as_dataframe("http://localhost:5005/api/cities")
 #making geodataframe from lat lon columns
@@ -300,50 +298,74 @@ def update_table2_section(selected_city, selected_parameter_type, user, password
 # Callback to update the folium map based on the selected city
 @app.callback(
     Output('folium-map', 'srcDoc'),
-    [Input('city-dropdown', 'value')]
+    [Input('city-dropdown', 'value'),
+    Input('parameter-type-dropdown', 'value')]
 )
-def update_folium_map(selected_city):
+def update_folium_map(selected_city, selected_parameter_type):
+    lat=download_data_as_dataframe("http://localhost:5005/api/cities/lat/"+selected_city).iloc[0][0]
+    lon=download_data_as_dataframe("http://localhost:5005/api/cities/lon/"+selected_city).iloc[0][0]
+    pop_idr_p1=int(download_data_as_dataframe("http://localhost:5005/api/cities/pop_idr_p1/"+selected_city).iloc[0][0])
+    pop_idr_p2=int(download_data_as_dataframe("http://localhost:5005/api/cities/pop_idr_p2/"+selected_city).iloc[0][0])
+    pop_idr_p3=int(download_data_as_dataframe("http://localhost:5005/api/cities/pop_idr_p3/"+selected_city).iloc[0][0])
     # Check if the input is available
     if selected_city:
         # Get the data for the selected city
         city_data = cities[cities['name'] == selected_city]
         # Create a folium map centered at the selected city
-        folium_map = folium.Map(location=[city_data['lat'].values[0], city_data['lon'].values[0]], zoom_start=11)
+        folium_map = folium.Map(location=[lat, lon], zoom_start=11)
         # Add a marker for the selected city and selected parameter type
-        population = city_data['pop_idr_p1'].values[0] + city_data['pop_idr_p2'].values[0] + city_data['pop_idr_p3'].values[0]
+        population = pop_idr_p1+pop_idr_p2+pop_idr_p3
         folium.Marker([city_data['lat'].values[0], city_data['lon'].values[0]], popup=f"{city_data['name'].values[0]}  population: {int(population)}").add_to(folium_map)
-
-
+        # Add different base layers with attributions
+        folium.TileLayer('OpenStreetMap').add_to(folium_map)
+        folium.TileLayer('CartoDB Positron', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
+        folium.TileLayer('CartoDB DarkMatter', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
+        # Add Google Earth base layer
+        folium.TileLayer(tiles='http://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', attr='Google Earth', name='Google Earth').add_to(folium_map)
+        # Add a mini map
+        minimap = MiniMap(width=100, height=100)
+        folium_map.add_child(minimap)
+        # Add fullscreen button
+        Fullscreen().add_to(folium_map)
+        # Add measure control to the map
+        MeasureControl(primary_length_unit='kilometers', primary_area_unit='hectares').add_to(folium_map)
+        # Add draw tools
+        Draw().add_to(folium_map)
+        # Add layer control to the map
+        folium.LayerControl().add_to(folium_map)
+        
+        # Save the map to an HTML file
+        folium_map.save("map.html")
+        return open('map.html', 'r').read()
     else:
         # Create a folium map centered at Italy
         folium_map = folium.Map(location=[41.8719, 12.5674], zoom_start=4)
-        # Add markers for all cities 
+        # Add markers for all cities
         # popups should be the city names and population values
         for i in range(len(cities)):
-            population=cities.iloc[i]['pop_idr_p1']+cities.iloc[i]['pop_idr_p2']+cities.iloc[i]['pop_idr_p3']
+            population=pop_idr_p1+pop_idr_p2+pop_idr_p3
             folium.Marker([cities.iloc[i]['lat'], cities.iloc[i]['lon']], popup=f"{cities.iloc[i]['name']}  population: {int(population)}").add_to(folium_map)
-
-    # Add different base layers with attributions
-    folium.TileLayer('OpenStreetMap').add_to(folium_map)
-    folium.TileLayer('CartoDB Positron', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
-    folium.TileLayer('CartoDB DarkMatter', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
-    # Add Google Earth base layer
-    folium.TileLayer(tiles='http://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', attr='Google Earth', name='Google Earth').add_to(folium_map)
-    # Add a mini map
-    minimap = MiniMap(width=100, height=100)
-    folium_map.add_child(minimap)
-    # Add fullscreen button
-    Fullscreen().add_to(folium_map)
-    # Add measure control to the map
-    MeasureControl(primary_length_unit='kilometers', primary_area_unit='hectares').add_to(folium_map)
-    # Add draw tools
-    Draw().add_to(folium_map)
-    # Add layer control to the map
-    folium.LayerControl().add_to(folium_map)
-    
-    # Save the map to an HTML file
-    folium_map.save("map.html")
-    return open('map.html', 'r').read()
+        # Add different base layers with attributions
+        folium.TileLayer('OpenStreetMap').add_to(folium_map)
+        folium.TileLayer('CartoDB Positron', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
+        folium.TileLayer('CartoDB DarkMatter', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
+        # Add Google Earth base layer
+        folium.TileLayer(tiles='http://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', attr='Google Earth', name='Google Earth').add_to(folium_map)
+        # Add a mini map
+        minimap = MiniMap(width=100, height=100)
+        folium_map.add_child(minimap)
+        # Add fullscreen button
+        Fullscreen().add_to(folium_map)
+        # Add measure control to the map
+        MeasureControl(primary_length_unit='kilometers', primary_area_unit='hectares').add_to(folium_map)
+        # Add draw tools
+        Draw().add_to(folium_map)
+        # Add layer control to the map
+        folium.LayerControl().add_to(folium_map)
+        
+        # Save the map to an HTML file
+        folium_map.save("map.html")
+        return open('map.html', 'r').read()
 
 # Callback to update the download link based on the selected city and olympic_events
 @app.callback(

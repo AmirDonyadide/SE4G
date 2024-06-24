@@ -2,12 +2,9 @@ from functions import * # type: ignore
 import geopandas as gpd
 import pandas as pd
 import os
-from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer
+from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.exc import SQLAlchemyError
 from geoalchemy2 import Geometry
-from shapely import wkt
-import numpy as np
-from sqlalchemy.dialects.postgresql import VARCHAR
 from geopy.geocoders import Nominatim
 from time import sleep
 
