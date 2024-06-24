@@ -1,9 +1,9 @@
 from flask import Flask, jsonify, request
 import psycopg2
 import logging
+from psycopg2 import sql  
 
 app = Flask(__name__)
-
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -38,6 +38,24 @@ def get_all_cities():
     finally:
         conn.close()
 
+# API endpoint to fetch details of 1 city by name and specific column
+@app.route('/api/cities/<string:parameter>/<string:name>', methods=['GET'])
+def get_city_by_name_and_parameter(parameter,name):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql.SQL('SELECT {} FROM public."CITY" WHERE name = %s').format(sql.Identifier(parameter)), (name,))
+            city = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+            return jsonify(city)
+    except psycopg2.Error as e:
+        app.logger.error(f"Error fetching city: {e}")
+        return jsonify({'error': f"Error fetching city: {e}"}), 500
+    finally:
+        conn.close()
+
 # API endpoint to fetch details of indicators
 @app.route('/api/indicators', methods=['GET'])
 def get_all_indicators():
@@ -53,6 +71,25 @@ def get_all_indicators():
     except psycopg2.Error as e:
         app.logger.error(f"Error fetching indicators: {e}")
         return jsonify({'error': f"Error fetching indicators: {e}"}), 500
+    finally:
+        conn.close()
+
+# API endpoint to fetch details of 1 indicator by name and specific column
+@app.route('/api/indicators/<string:parameter>/<string:name>', methods=['GET'])
+def get_indicator_by_name_and_parameter(parameter,name):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+
+    try:
+        with conn.cursor() as cur:
+            query = sql.SQL('SELECT {field} FROM public."INDICATOR" WHERE "Indicator" = %s').format(field=sql.Identifier(parameter))
+            cur.execute(query, (name,))
+            indicator = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+            return jsonify(indicator)
+    except psycopg2.Error as e:
+        app.logger.error(f"Error fetching indicator: {e}")
+        return jsonify({'error': f"Error fetching indicator: {e}"}), 500
     finally:
         conn.close()
 
@@ -74,6 +111,25 @@ def get_users():
     finally:
         conn.close()
 
+# API endpoint to fetch details of 1 user by name and specific column
+@app.route('/api/users/<string:parameter>/<string:name>', methods=['GET'])
+def get_user_by_name_and_parameter(parameter,name):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+
+    try:
+        with conn.cursor() as cur:
+            query = sql.SQL('SELECT {field} FROM public."USER" WHERE "username" = %s').format(field=sql.Identifier(parameter))
+            cur.execute(query, (name,))
+            user = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+            return jsonify(user)
+    except psycopg2.Error as e:
+        app.logger.error(f"Error fetching user: {e}")
+        return jsonify({'error': f"Error fetching user: {e}"}), 500
+    finally:
+        conn.close()
+
 # API endpoint to fetch details of all olympic events
 @app.route('/api/olympic_events', methods=['GET'])
 def get_all_olympic_events():
@@ -84,6 +140,25 @@ def get_all_olympic_events():
     try:
         with conn.cursor() as cur:
             cur.execute('SELECT * FROM public."OLYMPIC_EVENTS"')
+            olympic_events = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+            return jsonify(olympic_events)
+    except psycopg2.Error as e:
+        app.logger.error(f"Error fetching olympic events: {e}")
+        return jsonify({'error': f"Error fetching olympic events: {e}"}), 500
+    finally:
+        conn.close()
+
+# API endpoint to fetch details of olympic events by city_uid and specific column
+@app.route('/api/olympic_events/<string:parameter>/<string:city_uid>', methods=['GET'])
+def get_olympic_events_by_city_uid_and_parameter(parameter,city_uid):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+
+    try:
+        with conn.cursor() as cur:
+            query = sql.SQL('SELECT {field} FROM public."OLYMPIC_EVENTS" WHERE "city_uid" = %s').format(field=sql.Identifier(parameter))
+            cur.execute(query, (city_uid,))
             olympic_events = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
             return jsonify(olympic_events)
     except psycopg2.Error as e:
