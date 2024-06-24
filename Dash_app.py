@@ -302,20 +302,18 @@ def update_table2_section(selected_city, selected_parameter_type, user, password
     Input('parameter-type-dropdown', 'value')]
 )
 def update_folium_map(selected_city, selected_parameter_type):
-    lat=download_data_as_dataframe("http://localhost:5005/api/cities/lat/"+selected_city).iloc[0][0]
-    lon=download_data_as_dataframe("http://localhost:5005/api/cities/lon/"+selected_city).iloc[0][0]
-    pop_idr_p1=int(download_data_as_dataframe("http://localhost:5005/api/cities/pop_idr_p1/"+selected_city).iloc[0][0])
-    pop_idr_p2=int(download_data_as_dataframe("http://localhost:5005/api/cities/pop_idr_p2/"+selected_city).iloc[0][0])
-    pop_idr_p3=int(download_data_as_dataframe("http://localhost:5005/api/cities/pop_idr_p3/"+selected_city).iloc[0][0])
     # Check if the input is available
     if selected_city:
+        lat=download_data_as_dataframe("http://localhost:5005/api/cities/lat/"+selected_city).iloc[0][0]
+        lon=download_data_as_dataframe("http://localhost:5005/api/cities/lon/"+selected_city).iloc[0][0]
         # Get the data for the selected city
         city_data = cities[cities['name'] == selected_city]
         # Create a folium map centered at the selected city
         folium_map = folium.Map(location=[lat, lon], zoom_start=11)
         # Add a marker for the selected city and selected parameter type
-        population = pop_idr_p1+pop_idr_p2+pop_idr_p3
-        folium.Marker([city_data['lat'].values[0], city_data['lon'].values[0]], popup=f"{city_data['name'].values[0]}  population: {int(population)}").add_to(folium_map)
+        parameter_data = indicators[indicators['Parameter_Type'] == selected_parameter_type]
+        sum=int(city_data[parameter_data['Indicator']].iloc[0].sum())
+        folium.Marker([lat, lon], popup=f"{selected_city}  {selected_parameter_type}: {sum}").add_to(folium_map)
         # Add different base layers with attributions
         folium.TileLayer('OpenStreetMap').add_to(folium_map)
         folium.TileLayer('CartoDB Positron', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
@@ -343,8 +341,7 @@ def update_folium_map(selected_city, selected_parameter_type):
         # Add markers for all cities
         # popups should be the city names and population values
         for i in range(len(cities)):
-            population=pop_idr_p1+pop_idr_p2+pop_idr_p3
-            folium.Marker([cities.iloc[i]['lat'], cities.iloc[i]['lon']], popup=f"{cities.iloc[i]['name']}  population: {int(population)}").add_to(folium_map)
+            folium.Marker([cities.iloc[i]['lat'], cities.iloc[i]['lon']], popup=f"{cities.iloc[i]['name']}  Population: {cities.iloc[i]['population']}").add_to(folium_map)
         # Add different base layers with attributions
         folium.TileLayer('OpenStreetMap').add_to(folium_map)
         folium.TileLayer('CartoDB Positron', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
