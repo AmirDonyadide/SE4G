@@ -91,7 +91,3 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## Acknowledgments
 
 Special thanks to the contributors of the libraries and tools used in this project.
-
----
-
-Copy and paste this content into your `README.md` file in your GitHub repository. Let me know if you need any more adjustments or additional information.
