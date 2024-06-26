@@ -29,17 +29,30 @@ This project is a Dash application designed to visualize geoinformatics data int
 ## Usage
 
 1. Ensure that your API server is running and accessible at the specified endpoints in the `Dash_app.py` file.
-2. Run the Dash application:
+2. Run the database setup script:
+
+   ```bash
+   python database.py
+   ```
+
+3. Start the Flask server:
+
+   ```bash
+   flask run
+   ```
+
+4. In a new terminal, run the Dash application:
 
    ```bash
    python Dash_app.py
    ```
 
-3. Open your web browser and navigate to `http://127.0.0.1:8050` to access the application.
+5. Open your web browser and navigate to `http://127.0.0.1:8050` to access the application.
 
 ## File Structure
 
 - `Dash_app.py`: Main application file.
+- `database.py`: Database setup script.
 - `assets/`: Directory containing custom stylesheets and other assets.
 - `functions.py`: Contains helper functions for data retrieval and processing.
 
@@ -50,6 +63,7 @@ This project is a Dash application designed to visualize geoinformatics data int
 - Plotly
 - Folium
 - Requests
+- Flask
 
 Ensure all dependencies are installed by running `pip install -r requirements.txt`.
 
