@@ -1,0 +1,12 @@
+dash
+geopandas
+plotly
+folium
+requests
+flask
+psycopg2
+pandas
+pyproj
+sqlalchemy
+geoalchemy2
+geopy
