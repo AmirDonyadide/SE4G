@@ -38,7 +38,7 @@ This project is a Dash application designed to visualize geoinformatics data int
 3. Start the Flask server:
 
    ```bash
-   flask run
+   python flask_app.py
    ```
 
 4. In a new terminal, run the Dash application:
