@@ -1,7 +1,3 @@
-Certainly! Here is the README formatted for GitHub:
-
----
-
 # Geoinformatics Data Visualization Dash App
 
 ## Introduction
