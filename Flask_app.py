@@ -12,8 +12,8 @@ def get_db_connection():
         conn = psycopg2.connect(
             host="localhost",
             database="SE4G",
-            user="postgres",
-            password="Amir0440935784"
+            user="Alessandro",
+            password="user"
         )
         return conn
     except psycopg2.Error as e:
@@ -111,6 +111,7 @@ def get_users():
     finally:
         conn.close()
 
+
 # API endpoint to fetch details of 1 user by name and specific column
 @app.route('/api/users/<string:parameter>/<string:name>', methods=['GET'])
 def get_user_by_name_and_parameter(parameter,name):
@@ -184,6 +185,45 @@ def add_user():
     except psycopg2.Error as e:
         app.logger.error(f"Error adding user: {e}")
         return jsonify({'error': f"Error adding user: {e}"}), 500
+    finally:
+        conn.close()
+
+
+# API endpoint to fetch reports
+@app.route('/api/reports', methods=['GET'])
+def get_reports():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute('SELECT * FROM public."REPORTS"')
+            reports = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
+            return jsonify(reports)
+    except psycopg2.Error as e:
+        app.logger.error(f"Error fetching reports: {e}")
+        return jsonify({'error': f"Error fetching reports: {e}"}), 500
+    finally:
+        conn.close()
+
+# API endpoint to send details of new reports to the reports table
+@app.route('/api/reports', methods=['POST'])
+def add_report():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'error': 'Database connection failed'}), 500
+
+    try:
+        data = request.json
+        with conn.cursor() as cur:
+            cur.execute('INSERT INTO public."REPORTS" (name, report) VALUES (%s, %s)',
+                        (data['name'], data['report']))
+            conn.commit()
+            return jsonify({'message': 'Report sent successfully'})
+    except psycopg2.Error as e:
+        app.logger.error(f"Error adding report: {e}")
+        return jsonify({'error': f"Error adding report: {e}"}), 500
     finally:
         conn.close()
 

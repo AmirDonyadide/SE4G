@@ -9,7 +9,7 @@ from geopy.geocoders import Nominatim
 from time import sleep
 
 # Set the working directory to ensure relative paths work correctly
-os.chdir('/Users/amirdonyadide/Desktop/SE4G')
+os.chdir('/Users/alela/OneDrive - Politecnico di Milano/UNI/SOFTWARE ENGINEERING FOR GEOINF/SE4G-main/SE4G-main')
 
 try:
     # Load shapefiles
@@ -27,7 +27,7 @@ except Exception as e:
 
 # Read Excel file into a DataFrame
 try:
-    olympic_events_df = pd.read_excel('data/olympic_events.xlsx', header=0)
+    olympic_events_df = pd.read_csv('data/olympic_events.csv', header=0)
     # Convert 'game_id' column to integer type
     olympic_events_df['fid'] = olympic_events_df['fid'].astype(int)
 except FileNotFoundError as e:
@@ -40,9 +40,22 @@ except Exception as e:
     raise
 
 try:
-    users_df = pd.read_excel('data/users.xlsx', header=0)
+    users_df = pd.read_csv('data/users.csv', header=0)
     # Convert all columns to string type
     users_df = users_df.astype(str)
+except FileNotFoundError as e:
+    # Handle file not found error
+    print(f"Error loading Excel file: {e}")
+    raise
+except Exception as e:
+    # Handle other exceptions
+    print(f"An error occurred while loading Excel file: {e}")
+    raise
+
+try:
+    reports_df = pd.read_csv('data/reports.csv', header=0)
+    # Convert all columns to string type
+    reports_df = reports_df.astype(str)
 except FileNotFoundError as e:
     # Handle file not found error
     print(f"Error loading Excel file: {e}")
@@ -209,7 +222,7 @@ except Exception as e:
 # Database connection
 try:
     # Establish a connection to the PostgreSQL database using the provided URL
-    db_url = 'postgresql://postgres:Amir0440935784@localhost:5432/SE4G'
+    db_url = 'postgresql://Alessandro:user@localhost:5432/SE4G'
     engine = create_engine(db_url)
     con = engine.connect()
 except SQLAlchemyError as e:
@@ -269,6 +282,15 @@ try:
 except SQLAlchemyError as e:
     # Notify if an error occurs during Olympic events data insertion
     print(f"An error occurred while inserting Users data into the database: {e}")
+    # Exit the program or handle the error appropriately
+
+try:
+    # Insert the processed Olympic events data into the 'olympic_events_df' table, replacing existing data if any
+    reports_df.to_sql('REPORTS', con, if_exists='replace', index=False)
+    print("REPORTS Data inserted into the database successfully.")
+except SQLAlchemyError as e:
+    # Notify if an error occurs during Olympic events data insertion
+    print(f"An error occurred while inserting Reports data into the database: {e}")
     # Exit the program or handle the error appropriately
 
 try:

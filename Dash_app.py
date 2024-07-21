@@ -6,6 +6,7 @@ from functions import download_data_as_dataframe
 import folium
 from folium.plugins import MiniMap, Fullscreen, Draw, MeasureControl
 import requests
+import pandas as pd
 
 # Download cities data from the API endpoints
 cities = download_data_as_dataframe("http://localhost:5005/api/cities")
@@ -18,8 +19,12 @@ indicators = download_data_as_dataframe("http://localhost:5005/api/indicators")
 # Download olympic_events data from the API endpoints
 olympic_events = download_data_as_dataframe("http://localhost:5005/api/olympic_events")
 
+# Download reports data from the API endpoints
+reports = download_data_as_dataframe("http://localhost:5005/api/reports")
+
 # Download users data from the API endpoints
 users = download_data_as_dataframe("http://localhost:5005/api/users")
+
 
 # Options for dropdowns
 city_options = [{'label': city, 'value': city} for city in cities['name']]
@@ -32,13 +37,13 @@ external_stylesheets = ['assets/styles.css']
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 app.title = "IDK"
 
-# Define the layout of the app
 app.layout = html.Div([
     # Header Section
     html.Div([
         html.H1("Geoinformatics Data Visualization"),
         html.P("Explore geographic data with interactive maps")
     ], className='header'),
+    
     # Two main sections: Map and Selection
     html.Div([
         # Left Section - Selection Tools
@@ -77,71 +82,97 @@ app.layout = html.Div([
                 value=[]
             ),
         ], className='selection-section'),
+        
         # Right Section - Map
         html.Div([
-            html.Iframe(id='folium-map', srcDoc=open('/Users/amirdonyadide/Desktop/SE4G/map.html', 'r').read(), width='100%', height='500')
+            html.Iframe(id='folium-map', srcDoc=open('/Users/alela/OneDrive - Politecnico di Milano/UNI/SOFTWARE ENGINEERING FOR GEOINF/SE4G-main/SE4G-main/map.html', 'r').read(), width='100%', height='500')
         ], className='map-section')
-    ]),
-    # Bottom Section - divided to 2 parts: the right is the plot section and the left is the table section
+    ], className='main-section'),
+
+    # Bottom Section - divided into 2 parts: the right is the plot section and the left is the table section
     html.Div([
         # Left Section - Table
         html.Div([
             html.Div(id='table1-section'),
             html.Br(),  # Add space between tables
-            # add download button for the table 1
+            # Add download button for the table 1
             html.A(html.Button('Download Table as CSV', className='download-button'), id='download1-link', download="table.csv", href="", target="_blank"),
             html.Br(),  # Add space between tables
             html.Br(),  # Add space between tables
             html.Div(id='table2-section'),
             html.Br(),  # Add space between tables
-            # add download button for the table 2
+            # Add download button for the table 2
             html.A(html.Button('Download Table as CSV', className='download-button'), id='download2-link', download="table.csv", href="", target="_blank"),
         ], className='table-section'),
+
         # Right Section - Plot
         html.Div([
             html.Div(id='plot-section')
         ], className='plot-section')
-    ]),
-    #add a section to register new user and send the data to database via flask post method '/api/user'
-    # Registration form section
+    ], className='bottom-section'),
+
+    # Registration and Report sections side-by-side
     html.Div([
-        html.H3("Register New User"),
-        html.Label("Username:"),
-        dcc.Input(
-            id='new-username-input',
-            type='text',
-            className='dash-input'
-        ),
-        html.Label("Name:"),
-        dcc.Input(
-            id='name-input',
-            type='text',
-            className='dash-input'
-        ),
-        html.Label("Last Name:"),
-        dcc.Input(
-            id='last-name-input',
-            type='text',
-            className='dash-input'
-        ),
-        html.Label("Email:"),
-        dcc.Input(
-            id='email-input',
-            type='email',
-            className='dash-input'
-        ),
-        html.Label("Password:"),
-        dcc.Input(
-            id='new-password-input',
-            type='password',
-            className='dash-password'
-        ),
-        html.Br(),  # Add space between inputs
-        html.Button('Register', id='register-button', n_clicks=0, className='dash-button'),
-        html.Div(id='register-message')
-    ], id='new_user_form', className='register-section'),
-    
-    #break 5 lines
+        # Original Registration Form
+        html.Div([
+            html.H3("Register New User"),
+            html.Label("Username:"),
+            dcc.Input(
+                id='new-username-input',
+                type='text',
+                className='dash-input'
+            ),
+            html.Label("Name:"),
+            dcc.Input(
+                id='name-input',
+                type='text',
+                className='dash-input'
+            ),
+            html.Label("Last Name:"),
+            dcc.Input(
+                id='last-name-input',
+                type='text',
+                className='dash-input'
+            ),
+            html.Label("Email:"),
+            dcc.Input(
+                id='email-input',
+                type='email',
+                className='dash-input'
+            ),
+            html.Label("Password:"),
+            dcc.Input(
+                id='new-password-input',
+                type='password',
+                className='dash-password'
+            ),
+            html.Br(),  # Add space between inputs
+            html.Button('Register', id='register-button', n_clicks=0, className='dash-button'),
+            html.Div(id='register-message')
+        ], className='register-section', style={'width': '48%', 'display': 'inline-block', 'vertical-align': 'top'}),
+
+        # Report Section
+        html.Div([
+            html.H3("Submit Report"),
+            html.Label("Name:"),
+            dcc.Input(
+                id='report-name-input',
+                type='text',
+                className='dash-input'
+            ),
+            html.Label("Report:"),
+            dcc.Textarea(
+                id='report-input',
+                className='dash-input',
+                style={'width': '100%', 'height': 100}
+            ),
+            html.Br(),  # Add space between inputs
+            html.Button('Submit Report', id='report-button', n_clicks=0, className='dash-button'),
+            html.Div(id='report-message')
+        ], className='register-section', style={'width': '48%', 'display': 'inline-block', 'vertical-align': 'top'}),
+    ], className='form-sections', style={'width': '100%', 'display': 'flex', 'justify-content': 'space-between'}),
+
+    # Break 5 lines
     html.Br(),
     html.Br(),
     html.Br(),
@@ -153,6 +184,8 @@ app.layout = html.Div([
         html.P("© 2024 IDK. All rights reserved.")
     ], className='footer')
 ])
+
+
 
 # Callback to update the plot section based on the selected city, parameter type and plot type
 @app.callback(
@@ -433,6 +466,26 @@ def register_new_user(n_clicks, new_username, name, last_name, email, new_passwo
         return ""
     
 
+# Callback to submit a new report
+@app.callback(
+    Output('report-message', 'children'),
+    [Input('report-button', 'n_clicks')],
+    [Input('report-name-input', 'value'),
+     Input('report-input', 'value')]
+)
+def submit_report(n_clicks, report_name, reports):
+    if n_clicks:
+        if report_name and reports:
+            # Send the data to the API endpoint
+                response2 = requests.post("http://localhost:5005/api/reports", json={'name': report_name, 'report': reports})
+                if response2.status_code == 200:
+                    return html.P("Report sent successfully")
+                else:
+                    return html.P("Error sending the report")            
+        else:
+            return html.P("Please enter fill all the sections to send a report")
+    else:
+        return ""
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=False, host='127.0.0.1', port=8054)
