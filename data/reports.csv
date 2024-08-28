@@ -1,2 +1,2 @@
-name,report
-1,report1
+name,report,lat,lon,report_date
+1,report1,0.001,0.001,08/01/2024
