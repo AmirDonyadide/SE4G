@@ -9,7 +9,7 @@ from geopy.geocoders import Nominatim
 from time import sleep
 
 # Set the working directory to ensure relative paths work correctly
-os.chdir('/Users/alela/OneDrive - Politecnico di Milano/UNI/SOFTWARE ENGINEERING FOR GEOINF/SE4G-main/SE4G-main')
+os.chdir('D:/POLIMI/SE/SE4G')
 
 try:
     # Load shapefiles
@@ -55,7 +55,8 @@ except Exception as e:
 try:
     reports_df = pd.read_csv('data/reports.csv', header=0)
     # Convert all columns to string type
-    reports_df = reports_df.astype(str)
+    reports_df['name'] = reports_df['name'].astype(str)
+    reports_df['report_date'] = pd.to_datetime(reports_df['report_date'])
 except FileNotFoundError as e:
     # Handle file not found error
     print(f"Error loading Excel file: {e}")
@@ -107,7 +108,7 @@ city_coordinates = []
 # Loop through each city and get its coordinates
 for city in target_cities:
     try:
-        location = geolocator.geocode(city + ", Italy")
+        location = geolocator.geocode(city + ", Italy", timeout=10)
         if location:
             city_coordinates.append((city, location.latitude, location.longitude))
         else:
@@ -115,6 +116,7 @@ for city in target_cities:
     except Exception as e:
         city_coordinates.append((city, None, None))
         print(f"Error geocoding {city}: {e}")
+    print(f"Ok geocoding {city}")
     sleep(1)  # Sleep to avoid overwhelming the geocoding service
 
 # Create a DataFrame
@@ -220,9 +222,10 @@ except Exception as e:
     print("An error occurred:", e)
 
 # Database connection
+con = None
 try:
     # Establish a connection to the PostgreSQL database using the provided URL
-    db_url = 'postgresql://Alessandro:user@localhost:5432/SE4G'
+    db_url = 'postgresql://postgres:2001@localhost:5432/SE4G'
     engine = create_engine(db_url)
     con = engine.connect()
 except SQLAlchemyError as e:

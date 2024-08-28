@@ -1,7 +1,9 @@
 from flask import Flask, jsonify, request
 import psycopg2
 import logging
-from psycopg2 import sql  
+from psycopg2 import sql
+
+from datetime import date, timedelta
 
 app = Flask(__name__)
 # Configure logging
@@ -12,8 +14,8 @@ def get_db_connection():
         conn = psycopg2.connect(
             host="localhost",
             database="SE4G",
-            user="Alessandro",
-            password="user"
+            user="postgres",
+            password="2001"
         )
         return conn
     except psycopg2.Error as e:
@@ -197,8 +199,11 @@ def get_reports():
         return jsonify({'error': 'Database connection failed'}), 500
 
     try:
+        sdate = date.today() + timedelta(days=-7)
+        sdate = sdate.strftime('%Y-%m-%d')
+        print(sdate)
         with conn.cursor() as cur:
-            cur.execute('SELECT * FROM public."REPORTS"')
+            cur.execute('SELECT * FROM public."REPORTS" r where r.report_date >= \'' + sdate + '\'')
             reports = [dict(zip([desc[0] for desc in cur.description], row)) for row in cur.fetchall()]
             return jsonify(reports)
     except psycopg2.Error as e:
@@ -217,8 +222,8 @@ def add_report():
     try:
         data = request.json
         with conn.cursor() as cur:
-            cur.execute('INSERT INTO public."REPORTS" (name, report) VALUES (%s, %s)',
-                        (data['name'], data['report']))
+            cur.execute('INSERT INTO public."REPORTS" (name, report, lat, lon, report_date) VALUES (%s, %s, %s, %s, %s)',
+                        (data['name'], data['report'], data['lat'], data['lon'], date.today()))
             conn.commit()
             return jsonify({'message': 'Report sent successfully'})
     except psycopg2.Error as e:

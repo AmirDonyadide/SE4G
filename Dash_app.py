@@ -20,7 +20,8 @@ indicators = download_data_as_dataframe("http://localhost:5005/api/indicators")
 olympic_events = download_data_as_dataframe("http://localhost:5005/api/olympic_events")
 
 # Download reports data from the API endpoints
-reports = download_data_as_dataframe("http://localhost:5005/api/reports")
+reports = []
+# reports = download_data_as_dataframe("http://localhost:5005/api/reports")
 
 # Download users data from the API endpoints
 users = download_data_as_dataframe("http://localhost:5005/api/users")
@@ -28,9 +29,11 @@ users = download_data_as_dataframe("http://localhost:5005/api/users")
 
 # Options for dropdowns
 city_options = [{'label': city, 'value': city} for city in cities['name']]
+role_options = [{'label': 'expert', 'value': 'a'}, {'label': 'normal', 'value': 'n'}]
 parameter_type_options = [{'label': parameter_type[0], 'value': parameter_type[1]} for parameter_type in [('Surface Area', 'surface area'), ('Population', 'population'), ('Building', 'building'), ('Local Business Units', 'local business units'), ('Families', 'families')]]
 plot_type_options = [{'label': plot_type[0], 'value': plot_type[1]} for plot_type in [('Pie Chart', 'pie'), ('Bar Plot', 'bar')]]
-
+form_style = {'width': '100%', 'display': 'flex', 'justify-content': 'space-between'}
+hidden_form_style = {'width': '100%', 'display': 'none', 'justify-content': 'space-between'}
 
 # Initialize the Dash app
 external_stylesheets = ['assets/styles.css']
@@ -85,7 +88,8 @@ app.layout = html.Div([
         
         # Right Section - Map
         html.Div([
-            html.Iframe(id='folium-map', srcDoc=open('/Users/alela/OneDrive - Politecnico di Milano/UNI/SOFTWARE ENGINEERING FOR GEOINF/SE4G-main/SE4G-main/map.html', 'r').read(), width='100%', height='500')
+            # html.Iframe(id='folium-map', srcDoc=open('/Users/alela/OneDrive - Politecnico di Milano/UNI/SOFTWARE ENGINEERING FOR GEOINF/SE4G-main/SE4G-main/map.html', 'r').read(), width='100%', height='500')
+            html.Iframe(id='folium-map', srcDoc=open('D:/POLIMI/SE/SE4G/map.html', 'r').read(), width='100%', height='500')
         ], className='map-section')
     ], className='main-section'),
 
@@ -146,6 +150,15 @@ app.layout = html.Div([
                 type='password',
                 className='dash-password'
             ),
+            html.Label("Role:"),
+            html.Br(),  # Add space between dropdowns
+            dcc.Dropdown(
+                id='role-dropdown',
+                options=role_options,
+                value=[],
+                multi=False,
+                className='dash-dropdown'
+            ),
             html.Br(),  # Add space between inputs
             html.Button('Register', id='register-button', n_clicks=0, className='dash-button'),
             html.Div(id='register-message')
@@ -160,6 +173,18 @@ app.layout = html.Div([
                 type='text',
                 className='dash-input'
             ),
+            html.Label("Lat:"),
+            dcc.Input(
+                id='report-lat-input',
+                type='text',
+                className='dash-input'
+            ),
+            html.Label("Lon:"),
+            dcc.Input(
+                id='report-lon-input',
+                type='text',
+                className='dash-input'
+            ),
             html.Label("Report:"),
             dcc.Textarea(
                 id='report-input',
@@ -170,7 +195,11 @@ app.layout = html.Div([
             html.Button('Submit Report', id='report-button', n_clicks=0, className='dash-button'),
             html.Div(id='report-message')
         ], className='register-section', style={'width': '48%', 'display': 'inline-block', 'vertical-align': 'top'}),
-    ], className='form-sections', style={'width': '100%', 'display': 'flex', 'justify-content': 'space-between'}),
+    ], className='form-sections', style=form_style),
+
+    html.Div([
+        html.Div("", id='table-reports-1', className='register-section', style={'width': '100%', 'display': 'inline-block', 'vertical-align': 'top'})
+    ], className='form-sections', id='div-reports-1', style=form_style),
 
     # Break 5 lines
     html.Br(),
@@ -301,7 +330,7 @@ def update_table2_section(selected_city, selected_parameter_type, user, password
                     data = data.T.reset_index()
                     data.columns = ['Indicator', 'Value']
                     df = data.merge(parameter_data, on='Indicator')
-                    df=df.drop(columns=['Parameter_Type', 'Risk_Type'])
+                    df = df.drop(columns=['Parameter_Type', 'Risk_Type'])
                     # Create the table based on the df
                     table = html.Table(
                         className='table',  # Apply the 'table' class for styling
@@ -336,7 +365,7 @@ def update_table2_section(selected_city, selected_parameter_type, user, password
 )
 def update_folium_map(selected_city, selected_parameter_type):
     # Check if the input is available
-    if selected_city:
+    if selected_city and selected_parameter_type:
         lat=download_data_as_dataframe("http://localhost:5005/api/cities/lat/"+selected_city).iloc[0][0]
         lon=download_data_as_dataframe("http://localhost:5005/api/cities/lon/"+selected_city).iloc[0][0]
         # Get the data for the selected city
@@ -347,6 +376,9 @@ def update_folium_map(selected_city, selected_parameter_type):
         parameter_data = indicators[indicators['Parameter_Type'] == selected_parameter_type]
         sum=int(city_data[parameter_data['Indicator']].iloc[0].sum())
         folium.Marker([lat, lon], popup=f"{selected_city}  {selected_parameter_type}: {sum}").add_to(folium_map)
+        reports = download_data_as_dataframe("http://localhost:5005/api/reports")
+        for _, rep in reports.iterrows():
+            folium.Marker([rep.lat, rep.lon], popup=rep.name, icon=folium.Icon(color='red', icon='info-sign')).add_to(folium_map)
         # Add different base layers with attributions
         folium.TileLayer('OpenStreetMap').add_to(folium_map)
         folium.TileLayer('CartoDB Positron', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
@@ -374,7 +406,7 @@ def update_folium_map(selected_city, selected_parameter_type):
         # Add markers for all cities
         # popups should be the city names and population values
         for i in range(len(cities)):
-            folium.Marker([cities.iloc[i]['lat'], cities.iloc[i]['lon']], popup=f"{cities.iloc[i]['name']}  Population: {cities.iloc[i]['population']}").add_to(folium_map)
+            folium.Marker([cities.iloc[i]['lat'], cities.iloc[i]['lon']], popup=f"{cities.iloc[i]['name']}").add_to(folium_map)
         # Add different base layers with attributions
         folium.TileLayer('OpenStreetMap').add_to(folium_map)
         folium.TileLayer('CartoDB Positron', attr='Map tiles by CartoDB, under CartoDB Attribution.').add_to(folium_map)
@@ -400,16 +432,23 @@ def update_folium_map(selected_city, selected_parameter_type):
 # Callback to update the download link based on the selected city and olympic_events
 @app.callback(
     Output('download1-link', 'href'),
-    [Input('city-dropdown', 'value')]
+    [Input('city-dropdown', 'value'),
+        Input('username-input', 'value'),
+        Input('password-input', 'value')]
 )
-def update_download_link(selected_city):
-    if selected_city:
-        # Get the olympic events data for the selected city
-        olympic_events_data = olympic_events[olympic_events['CITY'] == selected_city]
-        # Create a CSV file with the selected data
-        csv_string = olympic_events_data.to_csv(index=False, encoding='utf-8')
-        csv_string = "data:text/csv;charset=utf-8," + csv_string
-        return csv_string
+def update_download_link(selected_city, user, password):
+    if user and password:
+        if user in users['username'].values:
+            db_user = users[users['username'] == user]
+            if 'a' == db_user['role'].values[0]:
+                if password == db_user['password'].values[0]:
+                    if selected_city:
+                        # Get the olympic events data for the selected city
+                        olympic_events_data = olympic_events[olympic_events['CITY'] == selected_city]
+                        # Create a CSV file with the selected data
+                        csv_string = olympic_events_data.to_csv(index=False, encoding='utf-8')
+                        csv_string = "data:text/csv;charset=utf-8," + csv_string
+                        return csv_string
     else:
         return ""
 
@@ -417,24 +456,31 @@ def update_download_link(selected_city):
 @app.callback(
     Output('download2-link', 'href'),
     [Input('city-dropdown', 'value'),
-     Input('parameter-type-dropdown', 'value')]
+     Input('parameter-type-dropdown', 'value'),
+     Input('username-input', 'value'),
+     Input('password-input', 'value')]
 )
-def update_download_link(selected_city, selected_parameter_type):
-    if selected_city and selected_parameter_type:
-        # Get the data for the selected city
-        city_data = cities[cities['name'] == selected_city]
-        # Get the data for the selected parameter type
-        parameter_data = indicators[indicators['Parameter_Type'] == selected_parameter_type]
-        # Merge the city and parameter data
-        data = city_data[parameter_data['Indicator'].tolist()]
-        # Merge the data and parameter data
-        data = data.T.reset_index()
-        data.columns = ['Indicator', 'Value']
-        df = data.merge(parameter_data, on='Indicator')
-        # Create a CSV file with the selected data
-        csv_string = df.to_csv(index=False, encoding='utf-8')
-        csv_string = "data:text/csv;charset=utf-8," + csv_string
-        return csv_string
+def update_download_link(selected_city, selected_parameter_type, user, password):
+    if user and password:
+        if user in users['username'].values:
+            db_user = users[users['username'] == user]
+            if 'a' == db_user['role'].values[0]:
+                if password == db_user['password'].values[0]:
+                    if selected_city and selected_parameter_type:
+                        # Get the data for the selected city
+                        city_data = cities[cities['name'] == selected_city]
+                        # Get the data for the selected parameter type
+                        parameter_data = indicators[indicators['Parameter_Type'] == selected_parameter_type]
+                        # Merge the city and parameter data
+                        data = city_data[parameter_data['Indicator'].tolist()]
+                        # Merge the data and parameter data
+                        data = data.T.reset_index()
+                        data.columns = ['Indicator', 'Value']
+                        df = data.merge(parameter_data, on='Indicator')
+                        # Create a CSV file with the selected data
+                        csv_string = df.to_csv(index=False, encoding='utf-8')
+                        csv_string = "data:text/csv;charset=utf-8," + csv_string
+                        return csv_string
     else:
         return ""
 
@@ -446,14 +492,15 @@ def update_download_link(selected_city, selected_parameter_type):
      Input('name-input', 'value'),
      Input('last-name-input', 'value'),
      Input('email-input', 'value'),
-     Input('new-password-input', 'value')]
+     Input('new-password-input', 'value'),
+     Input('role-dropdown', 'value')]
 )
-def register_new_user(n_clicks, new_username, name, last_name, email, new_password):
+def register_new_user(n_clicks, new_username, name, last_name, email, new_password, role):
     if n_clicks:
-        if new_username and name and last_name and email and new_password:
+        if new_username and name and last_name and email and new_password and role:
             if new_username not in users['username'].values:
                 # Send the data to the API endpoint
-                response = requests.post("http://localhost:5005/api/user", json={'username': new_username, 'name': name, 'last_name': last_name, 'email': email, 'password': new_password})
+                response = requests.post("http://localhost:5005/api/user", json={'username': new_username, 'name': name, 'last_name': last_name, 'email': email, 'password': new_password, 'role': role})
                 if response.status_code == 200:
                     return html.P("User registered successfully")
                 else:
@@ -469,23 +516,70 @@ def register_new_user(n_clicks, new_username, name, last_name, email, new_passwo
 # Callback to submit a new report
 @app.callback(
     Output('report-message', 'children'),
+    Output('table-reports-1', 'children'),
+    Output('report-name-input', 'value'),
+     Output('report-lat-input', 'value'),
+     Output('report-lon-input', 'value'),
+     Output('report-input', 'value'),
+     Output('report-button', 'n_clicks'),
     [Input('report-button', 'n_clicks')],
     [Input('report-name-input', 'value'),
-     Input('report-input', 'value')]
+     Input('report-lat-input', 'value'),
+     Input('report-lon-input', 'value'),
+     Input('report-input', 'value'),
+     Input('username-input', 'value'),
+     Input('password-input', 'value')]
 )
-def submit_report(n_clicks, report_name, reports):
+def submit_report(n_clicks, report_name, report_lat, report_lon, reports_body, user, password):
+    login_flag = False
+    admin_flag = False
+    if user and password:
+        if user in users['username'].values:
+            db_user = users[users['username'] == user]
+            if 'a' == db_user['role'].values[0]:
+                admin_flag = True
+            if password == db_user['password'].values[0]:
+                login_flag = True
+    res_p = ""
     if n_clicks:
-        if report_name and reports:
-            # Send the data to the API endpoint
-                response2 = requests.post("http://localhost:5005/api/reports", json={'name': report_name, 'report': reports})
+        if report_name and reports_body:
+            if admin_flag:
+                response2 = requests.post("http://localhost:5005/api/reports", json={'name': report_name, 'report': reports_body, 'lat': report_lat, 'lon': report_lon})
                 if response2.status_code == 200:
-                    return html.P("Report sent successfully")
+                    res_p = html.P("Report sent successfully")
+                    report_name = ""
+                    report_lat = ""
+                    report_lon = ""
+                    reports_body = ""
                 else:
-                    return html.P("Error sending the report")            
+                    res_p = html.P("Error sending the report")  
+            else:
+                res_p = html.P("Pleaase login the correct user.")
         else:
-            return html.P("Please enter fill all the sections to send a report")
-    else:
-        return ""
+            res_p =  html.P("Please enter fill all the sections to send a report")
+    
+    tab = ""
+    if login_flag:
+        reports = download_data_as_dataframe("http://localhost:5005/api/reports")
+        tab = html.Table(
+                className='table',
+                children=[
+                    html.Thead(
+                        html.Tr([html.Th(col) for col in ['name', 'report', 'lat', 'lon']])
+                    ),
+                    html.Tbody([
+                        html.Tr([
+                            html.Td(reports.iloc[i]['name']),
+                            html.Td(reports.iloc[i]['report']),
+                            html.Td(reports.iloc[i]['lat']),
+                            html.Td(reports.iloc[i]['lon'])
+                        ]) for i in range(len(reports))
+                    ])
+                ]
+            )
+    return res_p, tab, report_name, report_lat, report_lon, reports_body, 0
+
+
 # Run the app
 if __name__ == '__main__':
     app.run_server(debug=False, host='127.0.0.1', port=8054)
